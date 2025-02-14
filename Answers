@@ -1,1 +1,146 @@
+Retrieve all books in the fiction genre
 
+SELECT * FROM bookstore.books where genre = "fiction";
+
+Find Books published after the year 1950
+
+SELECT * FROM bookstore.books where Published_Year > 1950;
+
+List all customers from Canada 
+
+SELECT * FROM bookstore.customers where Country = "Canada";
+
+Show all orders placed in November 2023
+
+SELECT * FROM bookstore.orders where Order_date Between "2023-11-01" and "2023-11-30" order by order_date;
+
+Retrieve the total stocks of books available 
+
+SELECT Sum(Stock) FROM bookstore.books;
+
+find the details of most expesive books 
+
+SELECT * FROM bookstore.books where price = (select Max(Price) from bookstore.books);
+and 
+SELECT * FROM bookstore.books Order by price desc limit 1;
+
+find the details of secord most expesive books 
+SELECT * FROM bookstore.books Order by price desc limit 1 offset 1;
+
+show all customer who ordered more than 1 quantity of books
+
+SELECT 
+    Customers.Name, orders.Quantity
+FROM Customers
+  JOIN
+    Orders ON Orders.Customer_ID = Customers.Customer_ID
+WHERE quantity > 1
+ORDER BY orders.quantity;
+
+Retrieve all orders where the order amount exceeds $20
+
+SELECT * FROM bookstore.orders where total_amount > 20 order by Total_amount;
+SELECT * FROM bookstore.orders
+WHERE
+    total_amount > 20
+ORDER BY Total_amount;
+
+List all genre avaialble in books 
+
+SELECT distinct(Genre) FROM bookstore.books;
+
+find the book with lowest stock 
+
+SELECT * FROM bookstore.books
+WHERE
+    stock = (SELECT MIN(stock)
+        FROM bookstore.books);
+
+and 
+
+SELECT * FROM Books 
+ORDER BY stock 
+LIMIT 1;
+
+Calculate total revenue generated from all orders 
+SELECT 
+    ROUND(SUM(Total_Amount), 2) AS Revenue
+FROM
+    bookstore.orders;
+
+INTERMIDIATE LEVEL
+
+Retreive the total number of books sold for each genre
+SELECT 
+    B.genre, SUM(O.Quantity) AS Total_books_sold
+FROM
+    Books B
+        JOIN
+    Orders O ON B.Book_id = O.Book_id
+GROUP BY B.genre;
+
+Find the average price of books available in Fentasy genre
+
+SELECT round(AVG(price), 2) AS Average_Price
+FROM Books
+WHERE Genre = 'Fantasy';
+
+List the customers who has placed atleast two orders 
+
+SELECT C.Name, COUNT(o.order_id) AS Order_count
+FROM
+    customers c
+        JOIN
+    orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id
+HAVING Order_count > 2;
+
+find the most frequently ordered book
+
+SELECT B.Title, COUNT(o.order_id) AS Order_count
+FROM
+    Books B
+        JOIN
+    orders o ON B.Book_id = O.book_id
+GROUP BY B.Title order by Order_count DESC limit 1;;
+
+show the top 3 expensive books in Fentasy genre
+
+SELECT 
+    title, Price
+FROM
+    bookstore.books
+WHERE
+    genre = 'Fantasy'
+ORDER BY price DESC
+LIMIT 3;
+
+Show the Total quantity of books sold by each author 
+
+SELECT B.Author as Author, sum(o.quantity) AS Order_count
+FROM
+    Books B
+        JOIN
+    orders o ON B.Book_id = O.book_id
+GROUP BY Author order by Order_count DESC;
+
+List the cities where customers who spent over $30 are located:
+
+Select C.city, round(Sum(O.Total_amount), 2) as Spent from Customers C
+Join Orders O
+on c.customer_id = o.customer_id 
+Group By C.city having spent > 30 order by Spent;
+
+Find the customer who spent the most on orders:
+
+Select C.customer_id, C.name, round(Sum(O.Total_amount), 2) as Spent from Customers C
+Join Orders O
+on c.customer_id = o.customer_id group by C.name order by spent desc limit 1;
+
+Calculate the stock remaining after fulfilling all orders:
+
+SELECT b.book_id, b.title, b.stock, COALESCE(SUM(o.quantity),0) AS Order_quantity,  
+(b.stock - COALESCE(SUM(o.quantity),0)) AS Remaining_Quantity
+FROM books b
+LEFT JOIN orders o ON b.book_id=o.book_id
+GROUP BY b.book_id ORDER BY b.book_id;
